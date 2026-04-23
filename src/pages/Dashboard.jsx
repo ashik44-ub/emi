@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { Users, Wallet, CalendarDays, ArrowUpRight, FileDown } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { formatCurrency } from '../utils/format';
 
 export default function Dashboard() {
   const { user } = useAuthStore();
@@ -55,7 +56,7 @@ export default function Dashboard() {
     doc.text(`Member ID: ${user.memberId}`, 14, 38);
     
     if (user?.role !== 'Admin') {
-      doc.text(`Total Paid: BDT ${stats?.userTotalPaid || 0}`, 14, 44);
+      doc.text(`Total Paid: BDT ${formatCurrency(stats?.userTotalPaid || 0)}`, 14, 44);
     }
 
     const tableColumn = user?.role === 'Admin' 
@@ -72,7 +73,7 @@ export default function Dashboard() {
           payment.userId?.fullName || 'N/A',
           payment.userId?.memberId || 'N/A',
           `${payment.month} ${payment.year}`,
-          `BDT ${payment.amount}`,
+          `BDT ${formatCurrency(payment.amount)}`,
           payment.paymentMethod,
           payment.transactionId
         ];
@@ -81,7 +82,7 @@ export default function Dashboard() {
           formatDate(payment.paymentDate || payment.createdAt),
           payment.month,
           payment.year,
-          `BDT ${payment.amount}`,
+          `BDT ${formatCurrency(payment.amount)}`,
           payment.paymentMethod,
           payment.transactionId
         ];
@@ -99,6 +100,63 @@ export default function Dashboard() {
 
     doc.save(`${user.memberId}_statement.pdf`);
   };
+  
+  const downloadSingleReceipt = (payment) => {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a5'
+    });
+
+    const paymentUser = user?.role === 'Admin' ? payment.userId : user;
+
+    // Background header
+    doc.setFillColor(59, 130, 246);
+    doc.rect(0, 0, 148, 30, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.text('Payment Receipt', 10, 15);
+    doc.setFontSize(10);
+    doc.text('EMI Management System', 10, 22);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.text(`Date: ${formatDate(payment.paymentDate || payment.createdAt)}`, 100, 45);
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Member Information', 10, 45);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`Name: ${paymentUser?.fullName || 'N/A'}`, 10, 55);
+    doc.text(`Member ID: ${paymentUser?.memberId || 'N/A'}`, 10, 62);
+    doc.text(`Mobile: ${paymentUser?.mobileNo || 'N/A'}`, 10, 69);
+
+    doc.line(10, 75, 138, 75);
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Payment Details', 10, 85);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`For Period: ${payment.month} ${payment.year}`, 10, 95);
+    doc.text(`Method: ${payment.paymentMethod}`, 10, 102);
+    doc.text(`Transaction ID: ${payment.transactionId}`, 10, 109);
+
+    doc.setFillColor(243, 244, 246);
+    doc.rect(10, 115, 128, 15, 'F');
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Total Amount: BDT ${formatCurrency(payment.amount)}`, 15, 125);
+
+    doc.setFontSize(10);
+    doc.setTextColor(107, 114, 128);
+    doc.text('This is a computer generated receipt.', 10, 145);
+    doc.text('Thank you for your payment!', 100, 145);
+
+    doc.save(`receipt_${payment.month}_${payment.year}.pdf`);
+  };
 
   if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
 
@@ -112,7 +170,7 @@ export default function Dashboard() {
           </div>
           {user?.role === 'Admin' && (
             <div className="bg-primary/10 text-primary px-4 py-2 rounded-lg font-medium flex items-center gap-2">
-              <Wallet size={18} /> Total Collection: BDT {stats?.totalCollection || 0}
+              <Wallet size={18} /> Total Collection: BDT {formatCurrency(stats?.totalCollection || 0)}
             </div>
           )}
         </div>
@@ -125,7 +183,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Total Balance Paid</p>
-            <h3 className="text-2xl font-bold text-foreground">BDT {stats?.userTotalPaid || 0}</h3>
+            <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.userTotalPaid || 0)}</h3>
           </div>
         </div>
 
@@ -135,7 +193,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Paid This Month ({stats?.currentMonth})</p>
-            <h3 className="text-2xl font-bold text-foreground">BDT {stats?.paidThisMonth || 0}</h3>
+            <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.paidThisMonth || 0)}</h3>
           </div>
         </div>
 
@@ -145,7 +203,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Paid This Year ({stats?.currentYear})</p>
-            <h3 className="text-2xl font-bold text-foreground">BDT {stats?.paidThisYear || 0}</h3>
+            <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.paidThisYear || 0)}</h3>
           </div>
         </div>
       </div>
@@ -175,6 +233,7 @@ export default function Dashboard() {
                 <th className="p-4 font-medium border-b border-border">Amount</th>
                 <th className="p-4 font-medium border-b border-border">Method</th>
                 <th className="p-4 font-medium border-b border-border">Transaction ID</th>
+                <th className="p-4 font-medium border-b border-border text-right">Receipt</th>
               </tr>
             </thead>
             <tbody>
@@ -191,13 +250,22 @@ export default function Dashboard() {
                       </>
                     )}
                     <td className="p-4 border-b border-border text-sm">{payment.month} {payment.year}</td>
-                    <td className="p-4 border-b border-border font-medium text-primary">BDT {payment.amount}</td>
+                    <td className="p-4 border-b border-border font-medium text-primary">BDT {formatCurrency(payment.amount)}</td>
                     <td className="p-4 border-b border-border text-sm">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
                         {payment.paymentMethod}
                       </span>
                     </td>
                     <td className="p-4 border-b border-border text-sm font-mono text-muted-foreground">{payment.transactionId}</td>
+                    <td className="p-4 border-b border-border text-right">
+                      <button 
+                        onClick={() => downloadSingleReceipt(payment)}
+                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                        title="Download Receipt"
+                      >
+                        <FileDown size={18} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
 const api = axios.create({
-  baseURL: 'https://emi-backend-sys.vercel.app/api',
+  baseURL: 'https://emi-backend-topaz.vercel.app/api',
 });
 
 api.interceptors.request.use((config) => {

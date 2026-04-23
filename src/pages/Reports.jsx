@@ -3,6 +3,7 @@ import api from '../api/axios';
 import { FileText, Search, LayoutGrid, List } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { Navigate } from 'react-router-dom';
+import { formatCurrency } from '../utils/format';
 
 const months = [
   "January", "February", "March", "April", "May", "June",
@@ -127,7 +128,7 @@ export default function Reports() {
                       <td className="p-4 border-b border-border font-medium">{deposit.fullName}</td>
                       <td className="p-4 border-b border-border font-mono text-sm">{deposit.memberId}</td>
                       <td className="p-4 border-b border-border text-sm">{deposit.month} {deposit.year}</td>
-                      <td className="p-4 border-b border-border font-bold text-primary text-right">BDT {deposit.totalAmount}</td>
+                      <td className="p-4 border-b border-border font-bold text-primary text-right">BDT {formatCurrency(deposit.totalAmount)}</td>
                     </tr>
                   ))
                 )}
@@ -166,12 +167,12 @@ export default function Reports() {
                           const amount = user.payments[m] || 0;
                           return (
                             <td key={m} className={`p-3 border-b border-border text-center ${amount > 0 ? 'font-bold text-primary' : 'text-muted-foreground/30'}`}>
-                              {amount > 0 ? amount : '-'}
+                              {amount > 0 ? formatCurrency(amount) : '-'}
                             </td>
                           );
                         })}
                         <td className="p-3 border-b border-border font-bold text-right bg-primary/5">
-                          {rowTotal > 0 ? `BDT ${rowTotal}` : '-'}
+                          {rowTotal > 0 ? `BDT ${formatCurrency(rowTotal)}` : '-'}
                         </td>
                       </tr>
                     );
