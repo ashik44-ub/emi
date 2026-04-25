@@ -115,6 +115,7 @@ export default function Reports() {
                   <th className="p-4 font-medium border-b border-border">Member ID</th>
                   <th className="p-4 font-medium border-b border-border">Period</th>
                   <th className="p-4 font-medium border-b border-border text-right">Amount</th>
+                  {user?.role === 'Admin' && <th className="p-4 font-medium border-b border-border text-right">Action</th>}
                 </tr>
               </thead>
               <tbody>
@@ -129,6 +130,16 @@ export default function Reports() {
                       <td className="p-4 border-b border-border font-mono text-sm">{deposit.memberId}</td>
                       <td className="p-4 border-b border-border text-sm">{deposit.month} {deposit.year}</td>
                       <td className="p-4 border-b border-border font-bold text-primary text-right">BDT {formatCurrency(deposit.totalAmount)}</td>
+                      {user?.role === 'Admin' && (
+                        <td className="p-4 border-b border-border text-right">
+                          <button 
+                            onClick={() => window.location.href = `/edit-payment/${deposit._id}`}
+                            className="text-primary hover:underline text-sm font-medium"
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}

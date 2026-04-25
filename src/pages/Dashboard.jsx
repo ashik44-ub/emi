@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../api/axios';
-import { Users, Wallet, CalendarDays, ArrowUpRight, FileDown } from 'lucide-react';
+import { Users, Wallet, CalendarDays, ArrowUpRight, FileDown, Edit3 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { formatCurrency } from '../utils/format';
@@ -258,13 +258,24 @@ export default function Dashboard() {
                     </td>
                     <td className="p-4 border-b border-border text-sm font-mono text-muted-foreground">{payment.transactionId}</td>
                     <td className="p-4 border-b border-border text-right">
-                      <button 
-                        onClick={() => downloadSingleReceipt(payment)}
-                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                        title="Download Receipt"
-                      >
-                        <FileDown size={18} />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        {user?.role === 'Admin' && (
+                          <button 
+                            onClick={() => window.location.href = `/edit-payment/${payment._id}`}
+                            className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit Payment"
+                          >
+                            <Edit3 size={18} />
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => downloadSingleReceipt(payment)}
+                          className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                          title="Download Receipt"
+                        >
+                          <FileDown size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

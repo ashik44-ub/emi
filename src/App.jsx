@@ -10,6 +10,7 @@ import Payment from './pages/Payment';
 import Profile from './pages/Profile';
 import Reports from './pages/Reports';
 import EditMember from './pages/EditMember';
+import EditPayment from './pages/EditPayment';
 import Layout from './components/Layout';
 
 function PrivateRoute({ children }) {
@@ -46,6 +47,7 @@ function App() {
         <Route path="profile" element={<Profile />} />
         <Route path="add-member" element={<Register />} />
         <Route path="edit-member/:id" element={<EditMember />} />
+        <Route path="edit-payment/:id" element={<EditPayment />} />
         <Route path="reports" element={<Reports />} />
       </Route>
     </Routes>
