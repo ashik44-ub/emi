@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../api/axios';
-import { Users, Wallet, CalendarDays, ArrowUpRight, FileDown, Edit3 } from 'lucide-react';
+import { Users, Wallet, CalendarDays, ArrowUpRight, FileDown, Edit3, Trash2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { formatCurrency } from '../utils/format';
@@ -35,6 +35,30 @@ export default function Dashboard() {
       fetchDashboardData();
     }
   }, [user]);
+
+  const handleDeletePayment = async (id) => {
+    if (window.confirm('Are you sure you want to delete this payment statement?')) {
+      try {
+        await api.delete(`/payments/${id}`);
+        setPayments(payments.filter(p => p._id !== id));
+      } catch (error) {
+        console.error("Failed to delete payment", error);
+        alert("Failed to delete payment");
+      }
+    }
+  };
+
+  const handleDeleteMember = async (id) => {
+    if (window.confirm('Are you sure you want to delete this member? All their data will be removed.')) {
+      try {
+        await api.delete(`/auth/user/${id}`);
+        setMembers(members.filter(m => m._id !== id));
+      } catch (error) {
+        console.error("Failed to delete member", error);
+        alert("Failed to delete member");
+      }
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -176,37 +200,39 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex items-center gap-4">
-          <div className="p-4 bg-primary/10 rounded-xl text-primary">
-            <Wallet size={24} />
+      {user?.role !== 'Admin' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex items-center gap-4">
+            <div className="p-4 bg-primary/10 rounded-xl text-primary">
+              <Wallet size={24} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Total Balance Paid</p>
+              <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.userTotalPaid || 0)}</h3>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Total Balance Paid</p>
-            <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.userTotalPaid || 0)}</h3>
-          </div>
-        </div>
 
-        <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex items-center gap-4">
-          <div className="p-4 bg-orange-500/10 rounded-xl text-orange-500">
-            <CalendarDays size={24} />
+          <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex items-center gap-4">
+            <div className="p-4 bg-orange-500/10 rounded-xl text-orange-500">
+              <CalendarDays size={24} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Paid This Month ({stats?.currentMonth})</p>
+              <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.paidThisMonth || 0)}</h3>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Paid This Month ({stats?.currentMonth})</p>
-            <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.paidThisMonth || 0)}</h3>
-          </div>
-        </div>
 
-        <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex items-center gap-4">
-          <div className="p-4 bg-green-500/10 rounded-xl text-green-500">
-            <ArrowUpRight size={24} />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">Paid This Year ({stats?.currentYear})</p>
-            <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.paidThisYear || 0)}</h3>
+          <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex items-center gap-4">
+            <div className="p-4 bg-green-500/10 rounded-xl text-green-500">
+              <ArrowUpRight size={24} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Paid This Year ({stats?.currentYear})</p>
+              <h3 className="text-2xl font-bold text-foreground">BDT {formatCurrency(stats?.paidThisYear || 0)}</h3>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="p-6 border-b border-border flex justify-between items-center">
@@ -260,13 +286,22 @@ export default function Dashboard() {
                     <td className="p-4 border-b border-border text-right">
                       <div className="flex justify-end gap-2">
                         {user?.role === 'Admin' && (
-                          <button 
-                            onClick={() => window.location.href = `/edit-payment/${payment._id}`}
-                            className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Edit Payment"
-                          >
-                            <Edit3 size={18} />
-                          </button>
+                          <>
+                            <button 
+                              onClick={() => window.location.href = `/edit-payment/${payment._id}`}
+                              className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Edit Payment"
+                            >
+                              <span className="flex items-center gap-1"><Edit3 size={16} /> Edit</span>
+                            </button>
+                            <button 
+                              onClick={() => handleDeletePayment(payment._id)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete Payment"
+                            >
+                              <span className="flex items-center gap-1"><Trash2 size={16} /> Delete</span>
+                            </button>
+                          </>
                         )}
                         <button 
                           onClick={() => downloadSingleReceipt(payment)}
@@ -312,12 +347,20 @@ export default function Dashboard() {
                     <td className="p-4 border-b border-border text-sm">{formatDate(m.joiningDate)}</td>
                     {user?.role === 'Admin' && (
                       <td className="p-4 border-b border-border text-right">
-                        <button 
-                          onClick={() => window.location.href = `/edit-member/${m._id}`}
-                          className="text-primary hover:underline text-sm font-medium"
-                        >
-                          Edit
-                        </button>
+                        <div className="flex justify-end gap-3">
+                          <button 
+                            onClick={() => window.location.href = `/edit-member/${m._id}`}
+                            className="text-primary hover:underline text-sm font-medium flex items-center gap-1"
+                          >
+                            <Edit3 size={14} /> Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteMember(m._id)}
+                            className="text-red-500 hover:underline text-sm font-medium flex items-center gap-1"
+                          >
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>
