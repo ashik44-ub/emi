@@ -128,7 +128,7 @@ export default function Reports() {
                     <tr key={index} className="hover:bg-muted/30 transition-colors">
                       <td className="p-4 border-b border-border font-medium">{deposit.fullName}</td>
                       <td className="p-4 border-b border-border font-mono text-sm">{deposit.memberId}</td>
-                      <td className="p-4 border-b border-border text-sm">{deposit.month} {deposit.year}</td>
+                      <td className="p-4 border-b border-border text-sm font-bold">{deposit.month} {deposit.year}</td>
                       <td className="p-4 border-b border-border font-bold text-primary text-right">BDT {formatCurrency(deposit.totalAmount)}</td>
                       {user?.role === 'Admin' && (
                         <td className="p-4 border-b border-border text-right">
@@ -151,11 +151,11 @@ export default function Reports() {
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground text-[10px] uppercase tracking-wider">
-                  <th className="p-3 font-semibold border-b border-border sticky left-0 bg-muted/50 z-10">Member Name</th>
+                  <th className="p-3 font-bold border-b border-border sticky left-0 bg-muted/50 z-10">Member Name</th>
                   {months.map(m => (
-                    <th key={m} className="p-3 font-semibold border-b border-border text-center whitespace-nowrap">{m.substring(0, 3)}</th>
+                    <th key={m} className="p-3 font-bold border-b border-border text-center whitespace-nowrap">{m.substring(0, 3)}</th>
                   ))}
-                  <th className="p-3 font-semibold border-b border-border text-right">Total</th>
+                  <th className="p-3 font-bold border-b border-border text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -177,8 +177,8 @@ export default function Reports() {
                         {months.map(m => {
                           const amount = user.payments[m] || 0;
                           return (
-                            <td key={m} className={`p-3 border-b border-border text-center ${amount > 0 ? 'font-bold text-primary' : 'text-muted-foreground/30'}`}>
-                              {amount > 0 ? formatCurrency(amount) : '-'}
+                            <td key={m} className={`p-3 border-b border-border text-center ${amount > 0 ? 'bg-green-100 text-green-700 font-bold' : ''}`}>
+                              {amount > 0 ? formatCurrency(amount) : ''}
                             </td>
                           );
                         })}
